@@ -13,5 +13,5 @@ Installation:
 2. Run #pip install -r requirements.txt
 
 Usage:
-3. Edit config.json file according to your environment
-4. Run script #python app.py
+1. Edit config.json file according to your environment
+2. Run script #python app.py
