@@ -36,7 +36,7 @@ def run_config(conf):
         logger.info("Connecting to [%s] device" % k_device)
         try:
             with Netmiko(**v_device.get("conn")) as conn:
-                logger.info("Promt: %s" % conn.find_prompt())
+                logger.info("Device Promt: %s" % conn.find_prompt())
                 if not conn.check_enable_mode():
                     logger.info("Not in privileged mode, switching to enable")
                     conn.enable()
@@ -44,11 +44,13 @@ def run_config(conf):
                 if len(v_device.get("cmd")) > 0:
                     logger.info("Executing local commands")
                     logger.info(conn.send_config_set(v_device.get("cmd")))
-                    write_memory(conn)
+                    if v_device.get("write_memory"):
+                        write_memory(conn)
                 elif len(conf.get("global_cmd")) > 0:
                     logger.info("Executing global commands")
                     logger.info(conn.send_config_set(conf.get("global_cmd")))
-                    write_memory(conn)
+                    if v_device.get("write_memory"):
+                        write_memory(conn)
                 else:
                     logger.warning("No global or local commands found for [%s] device" & k_device)
         except ValueError as e:

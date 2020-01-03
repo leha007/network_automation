@@ -21,7 +21,8 @@
         "interface dec31/2019",
         "shutdown",
         "exit"
-      ]
+      ],
+      "write_memory": true
     },
     "cisco_2": {
       "conn": {
@@ -32,7 +33,8 @@
         "secret": "",
         "device_type": "cisco_ios"
       },
-      "cmd": []
+      "cmd": [],
+      "write_memory": false
     }
   }
 }
