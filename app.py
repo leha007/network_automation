@@ -7,6 +7,7 @@ from json import JSONDecodeError
 from multiprocessing.pool import ThreadPool
 
 from netmiko import Netmiko, NetMikoTimeoutException, NetMikoAuthenticationException
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,10 @@ def write_memory(conn):
     if conn.is_alive():
         logger.info("Saving configuration to memory")
         logger.info(conn.send_command_expect('write memory'))
+
+
+def execute_on_device_wrapper(args):
+    execute_on_device(*args)
 
 
 def execute_on_device(lgr, global_cmd, k_device, v_device):
@@ -106,9 +111,10 @@ def run_config(conf):
 
     if is_multi:
         with ThreadPool(processes=get_number_of_threads(conf.get("options").get("threads"))) as workers_pool:
-            for _ in workers_pool.starmap(execute_on_device, [
+            for _ in tqdm(workers_pool.imap_unordered(execute_on_device_wrapper, [
                 (get_worker_logger(k_device), conf.get("global_cmd"),
-                 k_device, v_device) for k_device, v_device in conf.get("devices").items()]):
+                 k_device, v_device) for k_device, v_device in conf.get("devices").items()]),
+                          desc="Working on devices", unit="devices", total=len(conf.get("devices"))):
                 pass
         workers_pool.join()
     else:
