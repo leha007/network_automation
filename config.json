@@ -1,4 +1,8 @@
 {
+  "options": {
+    "use_multiprocessing": true,
+    "threads": "auto"
+  },
   "global_cmd": [
     "interface dec31/2019",
     "shutdown",
