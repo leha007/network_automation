@@ -88,8 +88,12 @@ def execute_on_device(lgr, global_cmd, k_device, v_device):
     lgr.info("++++++++Disconnected from [{0}] device++++++++".format(k_device))
 
 
-def get_number_of_threads(conf_threads):
+def get_number_of_threads(conf_threads, number_of_devices):
     rc = os.cpu_count()
+    if number_of_devices > rc:
+        rc *= 2
+    else:
+        rc = number_of_devices
     if isinstance(conf_threads, str) and conf_threads == "auto":
         logger.info("Using auto for multiprocessing setting")
     elif isinstance(conf_threads, str):
@@ -110,11 +114,12 @@ def run_config(conf):
     logger.info("Running{0} automation according to config file".format(" multiprocess" if is_multi else ""))
 
     if is_multi:
-        with ThreadPool(processes=get_number_of_threads(conf.get("options").get("threads"))) as workers_pool:
+        with ThreadPool(processes=get_number_of_threads(conf.get("options").get("threads"),
+                                                        len(conf.get("devices")))) as workers_pool:
             for _ in tqdm(workers_pool.imap_unordered(execute_on_device_wrapper, [
                 (get_worker_logger(k_device), conf.get("global_cmd"),
                  k_device, v_device) for k_device, v_device in conf.get("devices").items()]),
-                          desc="Working on devices", unit="devices", total=len(conf.get("devices"))):
+                          desc="Working on devices", unit="device", total=len(conf.get("devices"))):
                 pass
         workers_pool.join()
     else:
